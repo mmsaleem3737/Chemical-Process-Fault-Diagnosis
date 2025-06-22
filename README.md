@@ -1,62 +1,75 @@
-# SWRO Performance Prediction: A Case Study in Industrial AI
+# Real-Time Fault Diagnosis for a Chemical Process
 
-This repository contains a data science project that explores the feasibility of predicting membrane performance degradation in Seawater Reverse Osmosis (SWRO) desalination plants. The project serves as a real-world case study into the challenges and insights of applying machine learning to industrial processes, particularly when faced with limited data.
+This repository contains an end-to-end data science project that builds and deploys a machine learning model to diagnose operational faults in a simulated Sour Water Treatment Unit (SWTU). The project demonstrates a complete workflow from data exploration and model training to interpretation and deployment as an interactive web application.
 
-## The Challenge: Data Scarcity in Industrial AI
+**Live Demo:** [Link to your deployed Streamlit App will go here]
 
-Predictive maintenance is a key goal for modern industry, aiming to forecast equipment failure before it occurs. However, a major obstacle is the lack of public, high-quality operational data from industrial plants. This project directly confronts this "data scarcity" problem using a publicly available dataset to simulate a real-world predictive modeling task.
+## Key Features
+
+- **End-to-End Workflow:** Covers data cleaning, exploratory data analysis, model training, hyperparameter tuning, and evaluation.
+- **Advanced Modeling:** Utilizes a `RandomForestClassifier` optimized with `RandomizedSearchCV` to handle complex, non-linear relationships.
+- **Interpretability:** Goes beyond accuracy to provide deep insights through Feature Importance analysis and a detailed Confusion Matrix evaluation.
+- **Interactive Application:** Deploys the final model as a user-friendly Streamlit web app with both file upload and manual input capabilities.
+- **Professional Practices:** Emphasizes professional data science practices, including handling imbalanced data, stratified sampling, and clear documentation.
+
+## Project Overview
+
+The goal of this project was to bridge the gap between chemical engineering domain knowledge and data science by building a robust diagnostic tool for a common industrial process. The model analyzes 26 real-time and historical sensor readings (pressures, temperatures, flows, and levels) to classify the plant's current state into one of seven categories: "Normal Operation" or one of six specific fault conditions. This provides operators with immediate, specific insights that go far beyond simple high/low alarms, enabling faster and more accurate responses to process upsets.
 
 ## The Dataset
 
-The project utilizes the "Performance Data of a SWRO arising from Wave Powered Desalinisation" dataset from Mendeley Data. This dataset contains experimental data from a pilot-scale SWRO rig under various operating conditions (steady, sinusoidal, etc.), providing a valuable proxy for the kind of fluctuating performance seen in real-world scenarios.
+This project utilizes a public dataset generated using **Aspen Plus Dynamics®** as part of a Master's thesis in Chemical Engineering. It simulates a two-column Sour Water Treatment Unit (SWTU) designed to remove H₂S and NH₃ from industrial wastewater.
 
-## The Methodology: An Iterative Approach
+- **Key Characteristic:** The dataset is **highly imbalanced**, with "Normal Operation" representing the vast majority of samples. This is a realistic reflection of industrial data and required specific techniques to handle effectively.
+- **Source:** The original dataset can be found at this [GitHub repository](https://github.com/nogueira-ju/SWTU_FDD). We extend our gratitude to the author for making this high-quality dataset publicly available.
 
-The project followed a rigorous, iterative modeling process to find a viable solution:
+## Methodology
 
-1.  **Initial Classification:** A `RandomForestClassifier` was first built to distinguish between "healthy" (steady-state) and "stressed" (sinusoidal) operations. While achieving 100% accuracy, this model was deemed too simplistic as it was merely identifying the experiment type rather than predicting future performance.
+The project followed a structured, iterative workflow:
 
-2.  **Generalized Regression:** The problem was reframed to predict the final salt rejection percentage (a key performance indicator) based on the first few minutes of an experiment. A model trained on all available data failed to generalize, as the underlying physics of the different experiment types (steady vs. sinusoidal) were too distinct.
+1.  **Exploratory Data Analysis (EDA):** The initial analysis confirmed the data was clean but highly imbalanced. This critical insight guided our choice of models and evaluation metrics. A correlation heatmap also revealed multicollinearity between sensor variables, a common feature of industrial processes.
+2.  **Baseline Modeling:** A `RandomForestClassifier` was trained with `class_weight='balanced'` to establish an initial performance benchmark. It achieved an impressive **95.87% accuracy** on the validation set.
+3.  **Hyperparameter Tuning:** `RandomizedSearchCV` was used to optimize the model's hyperparameters, focusing on the `f1_macro` score to ensure strong performance across all classes, especially the rare fault conditions.
+4.  **Final Evaluation:** The tuned model was evaluated on a completely unseen test set, achieving **92.58% accuracy**. A detailed analysis of the **Confusion Matrix** was performed to identify the model's specific strengths and weaknesses.
 
-3.  **Hyper-Specialized Regression:** The final model, a `RandomForestRegressor`, was trained *exclusively* on the three available "sinusoidal" stress-test experiments. This represents a common real-world strategy: creating a specialized model for a specific operational mode.
+## Key Insights
 
-## The Core Finding: The "Brittle Expert" Model
+The final model is highly accurate, but the true value comes from its interpretation:
 
-After developing the specialized model, rigorous testing revealed a critical insight: **the model consistently predicted a poor outcome ("Alert" status) for any new data it was shown.**
+1.  **Feature Importance:** The model identified that a small subset of flow (`FC`), pressure (`PC`), and temperature (`TC`) controllers were the most important predictors of process health. This aligns perfectly with chemical engineering first principles and gives engineers confidence in the model's logic.
+2.  **Error Analysis:** The confusion matrix revealed that the model's primary weakness is occasionally misclassifying **Fault 2** (Significant Feed Composition Variance) as "Normal Operation." This specific, actionable insight is crucial for real-world deployment, as it informs operators about the model's limitations and where to focus their own expert monitoring.
 
-This is not a bug; it is the most important finding of the project.
+## How to Run This Project
 
-**Why does this happen?**
-Because the model was trained on an extremely small dataset (only 3 experiments), it has effectively **"memorized"** the exact numerical patterns of those specific tests. It did not learn to generalize to new, unseen patterns, even if those patterns represented "good" performance. When it encounters data that deviates even slightly from the patterns it has memorized, it correctly identifies the data as an unfamiliar anomaly and predicts a low-performance outcome.
+To run the Streamlit application on your local machine, please follow these steps:
 
-**Conclusion:** This project successfully demonstrates the primary challenge in real-world industrial AI—**data scarcity**. We have proven that the data processing and modeling methodology is sound, but that a robust, deployable model requires a much larger and more varied training dataset. This finding, and the analytical journey to uncover it, is more valuable than a simple "correct" prediction on a toy problem. It showcases a mature understanding of how machine learning models behave in practical, data-constrained environments.
+1.  **Clone the repository:**
+    ```bash
+    git clone [URL to your new GitHub repository]
+    cd [repository-folder-name]
+    ```
 
-## How to Run the Project
+2.  **Create a virtual environment (recommended):**
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    ```
 
-1.  **Set up the environment:**
+3.  **Install the required libraries:**
     ```bash
     pip install -r requirements.txt
     ```
 
-2.  **Run the Streamlit Application:**
-    The interactive application allows you to upload test data and see the model's prediction.
+4.  **Run the Streamlit app:**
     ```bash
     streamlit run app.py
     ```
-    The application includes a template file for users to understand the required data format.
+    Your web browser will open with the application running.
 
-## File Descriptions
+## Technologies Used
 
--   `app.py`: The core Streamlit web application for interacting with the model.
--   `final_model.joblib`: The saved, trained `RandomForestRegressor` model.
--   `requirements.txt`: A list of the Python packages required to run the project.
--   `generate_*.py`: A series of scripts used for generating various test data files to probe the model's behavior.
--   `data/`: Contains the original raw data files from the Mendeley dataset.
--   `Model_Code.ipynb`: Jupyter Notebook containing the initial Exploratory Data Analysis.
-
-## Future Work
-
-Given a larger and more diverse dataset of SWRO operational data, future work could involve:
--   Training a more robust regression model capable of generalizing across a wider range of conditions.
--   Developing a multi-class classification model to predict different types of operational issues (e.g., biofouling, scaling, mechanical failure).
--   Exploring more advanced time-series models like LSTMs or Transformers for performance prediction. 
+- **Programming Language:** Python
+- **Data Manipulation & Analysis:** Pandas, NumPy
+- **Machine Learning:** Scikit-learn
+- **Data Visualization:** Matplotlib, Seaborn
+- **Web App Framework:** Streamlit
