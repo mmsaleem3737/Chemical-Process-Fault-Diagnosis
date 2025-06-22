@@ -45,8 +45,8 @@ To run the Streamlit application on your local machine, please follow these step
 
 1.  **Clone the repository:**
     ```bash
-    git clone [URL to your new GitHub repository]
-    cd [repository-folder-name]
+    git clone https://github.com/mmsaleem3737/Chemical-Process-Fault-Diagnosis/tree/main
+    cd Chemical-Process-Fault-Diagnosis
     ```
 
 2.  **Create a virtual environment (recommended):**
